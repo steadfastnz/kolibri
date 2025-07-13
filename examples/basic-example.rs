@@ -1,7 +1,7 @@
 use embedded_graphics::geometry::Size;
 use embedded_graphics::mono_font::ascii;
 use embedded_graphics::pixelcolor::Rgb565;
-use embedded_graphics::prelude::Point;
+use embedded_graphics::prelude::{Point, WebColors};
 use embedded_graphics_simulator::sdl2::MouseButton;
 use embedded_graphics_simulator::{
     OutputSettingsBuilder, SimulatorDisplay, SimulatorEvent, Window,
@@ -63,7 +63,11 @@ fn main() -> Result<(), core::convert::Infallible> {
 
         ui.add(Label::new("Basic Example").with_font(ascii::FONT_10X20));
 
-        ui.add(Label::new("Basic Counter (7LOC)"));
+        ui.add(Label::new("Basic Counter (7LOC)")
+            .with_background(Rgb565::CSS_YELLOW)
+            .with_color(Rgb565::CSS_BLUE)
+            .with_underline(embedded_graphics::text::DecorationColor::Custom(Rgb565::CSS_RED))
+        );
 
         if ui.add_horizontal(Button::new("-")).clicked() {
             i = i.saturating_sub(1);

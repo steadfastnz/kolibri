@@ -50,7 +50,7 @@ use embedded_graphics::mono_font::MonoFont;
 use embedded_graphics::mono_font::MonoTextStyle;
 use embedded_graphics::pixelcolor::PixelColor;
 use embedded_graphics::prelude::*;
-use embedded_graphics::text::{Baseline, Text};
+use embedded_graphics::text::{Baseline, DecorationColor, Text};
 use foldhash::fast::RandomState;
 
 /// A widget for displaying text in the UI.
@@ -92,13 +92,17 @@ use foldhash::fast::RandomState;
 /// // Label with custom font and smartstate
 /// ui.add(Label::new("Custom font").with_font(ascii::FONT_10X20).smartstate(smartstateProvider.nxt()));
 /// ```
-pub struct Label<'a> {
+pub struct Label<'a, COL:PixelColor> {
     text: &'a str,
     font: Option<MonoFont<'a>>,
     smartstate: Container<'a, Smartstate>,
+    text_color: Option<COL>,
+    background_color: Option<COL>,
+    strikethrough: DecorationColor<COL>,
+    underline: DecorationColor<COL>,
 }
 
-impl<'a> Label<'a> {
+impl<'a, COL: PixelColor> Label<'a, COL> {
     /// Creates a new label with the given text.
     ///
     /// # Examples
@@ -123,11 +127,15 @@ impl<'a> Label<'a> {
     /// # let mut ui = Ui::new_fullscreen(&mut display, medsize_rgb565_style());
     /// ui.add(Label::new("Hello World"));
     /// ```
-    pub fn new(text: &'a str) -> Label<'a> {
+    pub fn new(text: &'a str) -> Label<'a,COL> {
         Label {
             text,
             font: None,
             smartstate: Container::empty(),
+            text_color: None,
+            background_color: None,
+            strikethrough: DecorationColor::None,
+            underline: DecorationColor::None,
         }
     }
 
@@ -195,10 +203,31 @@ impl<'a> Label<'a> {
         self.smartstate.set(smartstate);
         self
     }
+
+    pub fn with_color(mut self, col: COL) -> Self {
+        self.text_color = Some(col);
+        self
+    }
+    pub fn with_background(mut self, col: COL) -> Self {
+        self.background_color = Some(col);
+        self
+    }
+
+    pub fn with_strikethrough(mut self, dec: DecorationColor<COL>) -> Self {
+        self.strikethrough = dec;
+        self
+    }
+
+    pub fn with_underline(mut self, dec: DecorationColor<COL>) -> Self {
+            self.underline = dec;
+        self
+    }
+
+
 }
 
-impl Widget for Label<'_> {
-    fn draw<DRAW: DrawTarget<Color = COL>, COL: PixelColor>(
+impl<COL: PixelColor> Widget<COL> for Label<'_,COL> {
+    fn draw<DRAW: DrawTarget<Color = COL>>(
         &mut self,
         ui: &mut Ui<DRAW, COL>,
     ) -> GuiResult<Response> {
@@ -210,10 +239,19 @@ impl Widget for Label<'_> {
             ui.style().default_font
         };
 
+        let mut char_style = MonoTextStyle::new(&font, ui.style().text_color);
+        match self.text_color {
+            None => {},
+            Some(c) => char_style.text_color = Some(c),
+        }
+        char_style.background_color = self.background_color;
+        char_style.strikethrough_color = self.strikethrough;
+        char_style.underline_color = self.underline;
+
         let mut text = Text::new(
             self.text,
             Point::new(0, 0),
-            MonoTextStyle::new(&font, ui.style().text_color),
+            char_style,
         );
 
         let size = text.bounding_box();
@@ -228,6 +266,12 @@ impl Widget for Label<'_> {
             0,
             (iresponse.area.size.height - size.size.height) as i32 / 2,
         )));
+
+        //correct misalignment when underlined
+        if DecorationColor::None != self.underline {
+            text.translate_mut(Point::new(0,-1));
+        }
+
         text.text_style.baseline = Baseline::Top;
 
         // check smartstate (a bool would work, but this is consistent with other widgets)
@@ -323,14 +367,18 @@ impl Default for Hasher {
 ///     &hasher
 /// ));
 /// ```
-pub struct HashLabel<'a> {
+pub struct HashLabel<'a, COL: PixelColor> {
     text: &'a str,
     font: Option<MonoFont<'a>>,
     smartstate: Container<'a, Smartstate>,
     hasher: &'a Hasher,
+    text_color: Option<COL>,
+    background_color: Option<COL>,
+    strikethrough: DecorationColor<COL>,
+    underline: DecorationColor<COL>,
 }
 
-impl<'a> HashLabel<'a> {
+impl<'a, COL: PixelColor> HashLabel<'a,COL> {
     /// Creates a new HashLabel with the given text, smartstate, and hasher.
     ///
     /// # Examples
@@ -370,6 +418,10 @@ impl<'a> HashLabel<'a> {
             font: None,
             smartstate: Container::new(smartstate),
             hasher,
+            text_color: None,
+            background_color: None,
+            strikethrough: DecorationColor::None,
+            underline: DecorationColor::None,
         }
     }
 
@@ -405,10 +457,31 @@ impl<'a> HashLabel<'a> {
         self.font = Some(font);
         self
     }
+
+
+    pub fn with_color(mut self, col: COL) -> Self {
+        self.text_color = Some(col);
+        self
+    }
+    pub fn with_background(mut self, col: COL) -> Self {
+        self.background_color = Some(col);
+        self
+    }
+
+    pub fn with_strikethrough(mut self, dec: DecorationColor<COL>) -> Self {
+        self.strikethrough = dec;
+        self
+    }
+
+    pub fn with_underline(mut self, dec: DecorationColor<COL>) -> Self {
+            self.underline = dec;
+        self
+    }
+
 }
 
-impl Widget for HashLabel<'_> {
-    fn draw<DRAW: DrawTarget<Color = COL>, COL: PixelColor>(
+impl<COL :PixelColor> Widget<COL> for HashLabel<'_,COL> {
+    fn draw<DRAW: DrawTarget<Color = COL>>(
         &mut self,
         ui: &mut Ui<DRAW, COL>,
     ) -> GuiResult<Response> {
@@ -420,10 +493,19 @@ impl Widget for HashLabel<'_> {
             ui.style().default_font
         };
 
+        let mut char_style = MonoTextStyle::new(&font, ui.style().text_color);
+        match self.text_color {
+            None => {},
+            Some(c) => char_style.text_color = Some(c),
+        }
+        char_style.background_color = self.background_color;
+        char_style.strikethrough_color = self.strikethrough;
+        char_style.underline_color = self.underline;
+
         let mut text = Text::new(
             self.text,
             Point::new(0, 0),
-            MonoTextStyle::new(&font, ui.style().text_color),
+            char_style,
         );
 
         let size = text.bounding_box();
@@ -444,6 +526,12 @@ impl Widget for HashLabel<'_> {
                 0,
                 (iresponse.area.size.height - size.size.height) as i32 / 2,
             )));
+
+            //correct misalignment when underlined
+            if DecorationColor::None != self.underline {
+                text.translate_mut(Point::new(0,-1));
+            }
+
             text.text_style.baseline = Baseline::Top;
 
             // check smartstate (a bool would work, but this is consistent with other widgets)
