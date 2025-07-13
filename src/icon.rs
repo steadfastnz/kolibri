@@ -68,12 +68,13 @@ use embedded_iconoir::prelude::*;
 ///
 /// You can choose an icon from all resolutions of [embedded_iconoir], such as [embedded_iconoir::size12px] up to [embedded_iconoir::size144px].
 /// For all icons, see [embedded_iconoir::size12px]
-pub struct IconWidget<'a, Ico: IconoirIcon> {
+pub struct IconWidget<'a, Ico: IconoirIcon, COL: PixelColor> {
     marker: PhantomData<Ico>,
     smartstate: Container<'a, Smartstate>,
+    icon_color: Option<COL>,
 }
 
-impl<'a, Ico: IconoirIcon> IconWidget<'a, Ico> {
+impl<'a, Ico: IconoirIcon, COL: PixelColor> IconWidget<'a, Ico, COL> {
     /// Creates a new [IconWidget] from an [IconoirIcon] instance.
     ///
     /// The icon color from the icon instance will be ignored, as the widget
@@ -85,6 +86,7 @@ impl<'a, Ico: IconoirIcon> IconWidget<'a, Ico> {
         Self {
             marker: PhantomData,
             smartstate: Container::empty(),
+            icon_color: None,
         }
     }
 
@@ -96,6 +98,7 @@ impl<'a, Ico: IconoirIcon> IconWidget<'a, Ico> {
         Self {
             marker: PhantomData,
             smartstate: Container::empty(),
+            icon_color: None,
         }
     }
 
@@ -109,13 +112,19 @@ impl<'a, Ico: IconoirIcon> IconWidget<'a, Ico> {
         self.smartstate.set(smartstate);
         self
     }
+
+    pub fn with_color(mut self, col: COL) -> Self {
+        self.icon_color = Some(col);
+        self
+    }
+
 }
 
-impl<Ico: IconoirIcon, COL :PixelColor> Widget<COL> for IconWidget<'_, Ico> {
+impl<Ico: IconoirIcon, COL :PixelColor> Widget<COL> for IconWidget<'_, Ico, COL> {
     /// Draws the icon within the UI.
     ///
     /// This method:
-    /// 1. Creates an icon with the current style's icon color
+    /// 1. Creates an icon with the current style's icon color, or if icon_color is Some with the icon's color
     /// 2. Allocates space based on the icon's size
     /// 3. Updates the smartstate
     /// 4. Draws the icon if necessary (when smartstate changes or is forced to redraw)
@@ -125,7 +134,11 @@ impl<Ico: IconoirIcon, COL :PixelColor> Widget<COL> for IconWidget<'_, Ico> {
         ui: &mut Ui<DRAW, COL>,
     ) -> GuiResult<Response> {
         // find size && allocate space
-        let icon = Ico::new(ui.style().icon_color);
+        let mut icon = Ico::new(ui.style().icon_color);
+        match self.icon_color {
+            None => {},
+            Some(c) => icon = Ico::new(c),
+        }
         let iresponse = ui.allocate_space(icon.size())?;
 
         let prevstate = self.smartstate.clone_inner();

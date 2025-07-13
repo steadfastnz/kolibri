@@ -1,6 +1,6 @@
 use embedded_graphics::geometry::Size;
 use embedded_graphics::pixelcolor::Rgb565;
-use embedded_graphics::prelude::Point;
+use embedded_graphics::prelude::{Point, WebColors};
 use embedded_graphics_simulator::sdl2::MouseButton;
 use embedded_graphics_simulator::{
     OutputSettingsBuilder, SimulatorDisplay, SimulatorEvent, Window,
@@ -90,7 +90,10 @@ fn main() -> Result<(), core::convert::Infallible> {
 
         ui.expand_row_height(20);
         ui.add_horizontal(Button::new("Another button!").smartstate(smartstates.nxt()));
-        ui.add(IconWidget::<size24px::layout::CornerBottomLeft>::new_from_type());
+        ui.add(IconWidget::<size24px::layout::CornerBottomLeft, Rgb565>::new_from_type());
+        ui.add(IconWidget::<size24px::actions::CheckCircle, Rgb565>::new_from_type().with_color(Rgb565::CSS_AQUA));
+
+
         // ui.add(IconButton::new(size24px::actions::AddCircle));
         ui.add_horizontal(IconButton::new(size24px::actions::AddCircle).label("Add 2"));
         ui.add_horizontal(IconButton::new(size24px::actions::AddCircle).label("Add 2"));
