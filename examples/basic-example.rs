@@ -1,7 +1,8 @@
 use embedded_graphics::geometry::Size;
 use embedded_graphics::mono_font::ascii;
 use embedded_graphics::pixelcolor::Rgb565;
-use embedded_graphics::prelude::Point;
+use embedded_graphics::prelude::{Point, WebColors};
+use embedded_graphics::text::DecorationColor;
 use embedded_graphics_simulator::sdl2::MouseButton;
 use embedded_graphics_simulator::{
     OutputSettingsBuilder, SimulatorDisplay, SimulatorEvent, Window,
@@ -60,8 +61,31 @@ fn main() -> Result<(), core::convert::Infallible> {
         last_down = mouse_down;
 
         // === ACTUAL UI CODE STARTS HERE ===
-
+        //ui.draw_widget_bounds_debug(Rgb565::CSS_MAGENTA);
+       
         ui.add(Label::new("Basic Example").with_font(ascii::FONT_10X20));
+
+        let default_spacing_width = ui.style().spacing.item_spacing.width;
+        ui.style_mut().spacing.item_spacing.width = 0;
+        ui.add_horizontal(Label::new("E"));
+        ui.style_mut().underline = DecorationColor::TextColor;
+        ui.add_horizontal(Label::new("x"));
+        ui.style_mut().underline = DecorationColor::Custom(Rgb565::CSS_RED);
+        ui.add_horizontal(Label::new("t"));
+        ui.style_mut().underline = DecorationColor::None;
+        ui.style_mut().text_background = DecorationColor::Custom(Rgb565::CSS_YELLOW);
+        ui.style_mut().text_color = Rgb565::CSS_BLUE;
+        ui.add_horizontal(Label::new("end"));
+        ui.style_mut().text_background = DecorationColor::None;
+        ui.style_mut().strikethrough = DecorationColor::Custom(Rgb565::CSS_RED);
+        ui.add_horizontal(Label::new("ed"));
+        ui.style_mut().text_color = medsize_rgb565_style().text_color;
+        ui.style_mut().strikethrough = DecorationColor::TextColor;
+        ui.add_horizontal(Label::new(" La"));
+        ui.style_mut().strikethrough = DecorationColor::None;
+        ui.add(Label::new("bel"));
+        ui.style_mut().spacing.item_spacing.width = default_spacing_width;
+
 
         ui.add(Label::new("Basic Counter (7LOC)"));
 

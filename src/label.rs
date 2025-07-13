@@ -50,7 +50,7 @@ use embedded_graphics::mono_font::MonoFont;
 use embedded_graphics::mono_font::MonoTextStyle;
 use embedded_graphics::pixelcolor::PixelColor;
 use embedded_graphics::prelude::*;
-use embedded_graphics::text::{Baseline, Text};
+use embedded_graphics::text::{Baseline, DecorationColor, Text};
 use foldhash::fast::RandomState;
 
 /// A widget for displaying text in the UI.
@@ -210,10 +210,20 @@ impl Widget for Label<'_> {
             ui.style().default_font
         };
 
+        // new styling features
+        let mut char_style = MonoTextStyle::new(&font, ui.style().text_color);
+        match ui.style().text_background {
+            DecorationColor::None => (),
+            DecorationColor::TextColor => char_style.background_color =  Some(ui.style().text_color),  // NB: this won't be visible
+            DecorationColor::Custom(c) => char_style.background_color = Some(c),
+        };
+        char_style.strikethrough_color = ui.style().strikethrough;
+        char_style.underline_color = ui.style().underline;
+
         let mut text = Text::new(
             self.text,
             Point::new(0, 0),
-            MonoTextStyle::new(&font, ui.style().text_color),
+            char_style,
         );
 
         let size = text.bounding_box();
@@ -223,11 +233,15 @@ impl Widget for Label<'_> {
         let iresponse = ui.allocate_space(Size::new(size.size.width, size.size.height))?;
 
         // move text (center vertically)
-
         text.translate_mut(iresponse.area.top_left.add(Point::new(
             0,
             (iresponse.area.size.height - size.size.height) as i32 / 2,
         )));
+
+        if DecorationColor::None != ui.style().underline {
+            text.translate_mut(Point::new(0,-1));
+        }
+
         text.text_style.baseline = Baseline::Top;
 
         // check smartstate (a bool would work, but this is consistent with other widgets)
@@ -420,10 +434,20 @@ impl Widget for HashLabel<'_> {
             ui.style().default_font
         };
 
+        // new styling features
+        let mut char_style = MonoTextStyle::new(&font, ui.style().text_color);
+        match ui.style().text_background {
+            DecorationColor::None => (),
+            DecorationColor::TextColor => char_style.background_color =  Some(ui.style().text_color),  // NB: this won't be visible
+            DecorationColor::Custom(c) => char_style.background_color = Some(c),
+        };
+        char_style.strikethrough_color = ui.style().strikethrough;
+        char_style.underline_color = ui.style().underline;
+        
         let mut text = Text::new(
             self.text,
             Point::new(0, 0),
-            MonoTextStyle::new(&font, ui.style().text_color),
+            char_style,
         );
 
         let size = text.bounding_box();
@@ -444,6 +468,9 @@ impl Widget for HashLabel<'_> {
                 0,
                 (iresponse.area.size.height - size.size.height) as i32 / 2,
             )));
+            if DecorationColor::None != ui.style().underline {
+                text.translate_mut(Point::new(0,-1));
+            }
             text.text_style.baseline = Baseline::Top;
 
             // check smartstate (a bool would work, but this is consistent with other widgets)

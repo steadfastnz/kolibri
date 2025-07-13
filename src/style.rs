@@ -53,6 +53,7 @@
 use embedded_graphics::mono_font::{self, MonoFont};
 use embedded_graphics::pixelcolor::{PixelColor, Rgb565};
 use embedded_graphics::prelude::*;
+use embedded_graphics::text::DecorationColor;
 
 /// Controls spacing between UI elements.
 #[derive(Debug, Clone, Copy)]
@@ -92,6 +93,9 @@ pub fn medsize_rgb565_debug_style() -> Style<Rgb565> {
             default_padding: Size::new(3, 3),
             window_border_padding: Size::new(3, 3),
         },
+        text_background: DecorationColor::None,
+        underline: DecorationColor::None,
+        strikethrough: DecorationColor::None,
     }
 }
 
@@ -119,6 +123,9 @@ pub fn medsize_rgb565_style() -> Style<Rgb565> {
             default_padding: Size::new(1, 1),
             window_border_padding: Size::new(3, 3),
         },
+        text_background: DecorationColor::None,
+        underline: DecorationColor::None,
+        strikethrough: DecorationColor::None,
     }
 }
 
@@ -146,6 +153,9 @@ pub fn medsize_light_rgb565_style() -> Style<Rgb565> {
             default_padding: Size::new(1, 1),
             window_border_padding: Size::new(3, 3),
         },
+        text_background: DecorationColor::None,
+        underline: DecorationColor::None,
+        strikethrough: DecorationColor::None,
     }
 }
 
@@ -173,6 +183,9 @@ pub fn medsize_sakura_rgb565_style() -> Style<Rgb565> {
             default_padding: Size::new(1, 1),
             window_border_padding: Size::new(3, 3),
         },
+        text_background: DecorationColor::None,
+        underline: DecorationColor::None,
+        strikethrough: DecorationColor::None,
     }
 }
 
@@ -200,6 +213,9 @@ pub fn medsize_blue_rgb565_style() -> Style<Rgb565> {
             default_padding: Size::new(1, 1),
             window_border_padding: Size::new(3, 3),
         },
+        text_background: DecorationColor::None,
+        underline: DecorationColor::None,
+        strikethrough: DecorationColor::None,
     }
 }
 
@@ -227,6 +243,9 @@ pub fn medsize_crt_rgb565_style() -> Style<Rgb565> {
             default_padding: Size::new(1, 1),
             window_border_padding: Size::new(3, 3),
         },
+        text_background: DecorationColor::None,
+        underline: DecorationColor::None,
+        strikethrough: DecorationColor::None,
     }
 }
 
@@ -254,6 +273,9 @@ pub fn medsize_retro_rgb565_style() -> Style<Rgb565> {
             default_padding: Size::new(1, 1),
             window_border_padding: Size::new(3, 3),
         },
+        text_background: DecorationColor::None,
+        underline: DecorationColor::None,
+        strikethrough: DecorationColor::None,
     }
 }
 
@@ -324,4 +346,12 @@ pub struct Style<COL: PixelColor> {
     pub highlight_border_width: u32,
     /// Color used for text
     pub text_color: COL,
+
+    //fields added by Wes for enhanced label and icon
+    /// Color used for text background, transparent if DecorationColor::None,
+    pub text_background: DecorationColor<COL>,
+    /// decoration for underline
+    pub underline: DecorationColor<COL>,
+    /// decoration for underline
+    pub strikethrough: DecorationColor<COL>,
 }
