@@ -2,6 +2,7 @@ use embedded_graphics::geometry::Size;
 use embedded_graphics::mono_font::ascii;
 use embedded_graphics::pixelcolor::Rgb565;
 use embedded_graphics::prelude::{Point, WebColors};
+use embedded_graphics::primitives::CornerRadiiBuilder;
 use embedded_graphics_simulator::sdl2::MouseButton;
 use embedded_graphics_simulator::{
     OutputSettingsBuilder, SimulatorDisplay, SimulatorEvent, Window,
@@ -69,7 +70,18 @@ fn main() -> Result<(), core::convert::Infallible> {
             .with_underline(embedded_graphics::text::DecorationColor::Custom(Rgb565::CSS_RED))
         );
 
-        if ui.add_horizontal(Button::new("-")).clicked() {
+        if ui.add_horizontal(
+            Button::new("-")
+                .with_corner_radii(
+                    CornerRadiiBuilder::new()
+                        .top_left(Size::new(5,5))
+                        .top_right(Size::new(5,5))
+                        .bottom_left(Size::new(5,5))
+                        .bottom_right(Size::new(5,5))
+                        .build()
+                )
+            )
+            .clicked() {
             i = i.saturating_sub(1);
         }
         ui.add_horizontal(Label::new(format!("Clicked {} times", i).as_ref()));

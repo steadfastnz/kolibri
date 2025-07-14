@@ -11,7 +11,7 @@ use embedded_graphics::geometry::{Point, Size};
 use embedded_graphics::mono_font::MonoTextStyle;
 use embedded_graphics::pixelcolor::PixelColor;
 use embedded_graphics::prelude::*;
-use embedded_graphics::primitives::{PrimitiveStyleBuilder, Rectangle};
+use embedded_graphics::primitives::{CornerRadii, PrimitiveStyleBuilder, Rectangle, RoundedRectangle};
 use embedded_graphics::text::{Baseline, Text};
 
 /// # Button Widget
@@ -79,6 +79,7 @@ use embedded_graphics::text::{Baseline, Text};
 pub struct Button<'a> {
     label: &'a str,
     smartstate: Container<'a, Smartstate>,
+    corners: Option<CornerRadii>,
 }
 
 impl<'a> Button<'a> {
@@ -93,6 +94,7 @@ impl<'a> Button<'a> {
         Button {
             label,
             smartstate: Container::empty(),
+            corners: None,
         }
     }
 
@@ -108,6 +110,11 @@ impl<'a> Button<'a> {
     /// Self with smartstate configured
     pub fn smartstate(mut self, smartstate: &'a mut Smartstate) -> Self {
         self.smartstate.set(smartstate);
+        self
+    }
+
+    pub fn with_corner_radii(mut self, radii: CornerRadii) -> Self{
+        self.corners = Some(radii);
         self
     }
 }
@@ -189,11 +196,25 @@ impl<COL :PixelColor> Widget<COL> for Button<'_> {
         if !self.smartstate.eq_option(&prevstate) {
             ui.start_drawing(&iresponse.area);
 
-            ui.draw(
-                &Rectangle::new(iresponse.area.top_left, iresponse.area.size)
-                    .into_styled(rect_style),
-            )
-            .ok();
+            match self.corners {
+                None => {
+                    ui.draw(
+                        &Rectangle::new(iresponse.area.top_left, iresponse.area.size)
+                            .into_styled(rect_style),
+                    )
+                    .ok();
+                },
+                Some (cnrs) => {
+                    ui.draw(
+                        &RoundedRectangle::new(
+                            Rectangle::new(iresponse.area.top_left, iresponse.area.size),
+                            cnrs)
+                            .into_styled(rect_style),
+                    )
+                    .ok();
+                }
+            }
+
             ui.draw(&text).ok();
 
             ui.finalize()?;
